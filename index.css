@@ -79,6 +79,12 @@ body {
     flex-shrink: 0;
 }
 
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
 .header-logo {
     display: flex;
     align-items: center;
@@ -110,6 +116,63 @@ body {
     font-size: 13px;
     color: var(--text-muted);
     font-weight: 400;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.install-pwa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    background: linear-gradient(135deg, var(--accent), #059669);
+    color: #ffffff;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    box-shadow: 0 2px 10px var(--accent-glow);
+    transition: all 0.2s ease;
+}
+
+.install-pwa-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px var(--accent-glow);
+    filter: brightness(1.1);
+}
+
+.github-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius-pill);
+    transition: all 0.2s ease;
+}
+
+.github-link-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-hover);
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .header-tagline {
+        display: none;
+    }
 }
 
 /* Main Workspace Split Layout */
