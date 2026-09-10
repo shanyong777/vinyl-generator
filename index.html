@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            var div = document.createElement('div');
+            div.style.position = 'fixed';
+            div.style.top = '0';
+            div.style.left = '0';
+            div.style.width = '100%';
+            div.style.background = 'red';
+            div.style.color = 'white';
+            div.style.padding = '20px';
+            div.style.zIndex = '99999';
+            div.style.fontSize = '16px';
+            div.style.fontFamily = 'monospace';
+            div.innerHTML = '<strong>JS Error:</strong> ' + msg + ' at ' + url + ':' + line + ':' + col;
+            document.body.appendChild(div);
+            return false;
+        };
+        window.addEventListener('unhandledrejection', function(event) {
+            var div = document.createElement('div');
+            div.style.position = 'fixed';
+            div.style.top = '60px';
+            div.style.left = '0';
+            div.style.width = '100%';
+            div.style.background = 'orange';
+            div.style.color = 'white';
+            div.style.padding = '20px';
+            div.style.zIndex = '99999';
+            div.style.fontSize = '16px';
+            div.style.fontFamily = 'monospace';
+            div.innerHTML = '<strong>Unhandled Rejection:</strong> ' + event.reason;
+            document.body.appendChild(div);
+        });
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyloop - Custom Vinyl Background Generator</title>
+    <meta name="description" content="Generate high-quality custom spinning vinyl animation videos in MP4 format for your music backgrounds. Customize colors, artwork, text, and visualizers.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons CDN -->
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    
+    <!-- Styling -->
+    <link rel="stylesheet" href="index.css?v=2">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="app-header">
+            <div class="header-logo">
+                <i class="ph-bold ph-disc logo-icon"></i>
+                <span class="logo-text">vinyloop</span>
+            </div>
+            <div class="header-tagline">
+                <span>Create animated spinning vinyl backgrounds for your music</span>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="app-workspace">
+            <!-- Sidebar Controls -->
+            <aside class="control-panel scrollable">
+                <!-- Navigation Tabs -->
+                <nav class="panel-tabs">
+                    <button class="tab-btn active" data-tab="artwork">
+                        <i class="ph-bold ph-palette"></i>
+                        <span>Artwork</span>
+                    </button>
+                    <button class="tab-btn" data-tab="audio">
+                        <i class="ph-bold ph-music-notes"></i>
+                        <span>Audio</span>
+                    </button>
+                    <button class="tab-btn" data-tab="layout">
+                        <i class="ph-bold ph-crop"></i>
+                        <span>Layout</span>
+                    </button>
+                    <button class="tab-btn" data-tab="effects">
+                        <i class="ph-bold ph-sliders-horizontal"></i>
+                        <span>Effects</span>
+                    </button>
+                    <button class="tab-btn" data-tab="export">
+                        <i class="ph-bold ph-download-simple"></i>
+                        <span>Export</span>
+                    </button>
+                </nav>
+
+                <!-- Tab Contents -->
+                <div class="tab-contents">
+                    <!-- SECTION 1: ARTWORK -->
+                    <section class="tab-section active" id="tab-artwork">
+                        <div class="control-group">
+                            <label class="group-label">Album Cover Art</label>
+                            <div class="dropzone" id="cover-dropzone">
+                                <input type="file" id="cover-upload" accept="image/*" class="file-input">
+                                <i class="ph-bold ph-image-square dropzone-icon"></i>
+                                <span class="dropzone-text">Drag & drop cover art or <span class="accent-link">browse</span></span>
+                                <span class="dropzone-sub">Supports PNG, JPG (1:1 ratio recommended)</span>
+                            </div>
+                            <div class="uploaded-file-preview hidden" id="cover-preview-container">
+                                <img src="" id="cover-preview-img" alt="Cover Art Preview">
+                                <div class="file-details">
+                                    <span class="file-name" id="cover-file-name">cover.jpg</span>
+                                    <button class="btn-icon-danger" id="remove-cover-btn">
+                                        <i class="ph-bold ph-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="group-label">Vinyl Design</label>
+                            <div class="design-grid">
+                                <div class="color-options-label">Vinyl Color Style</div>
+                                <div class="color-picker-row">
+                                    <button class="color-swatch active" data-color="black" style="background-color: #0b0b0d;" title="Classic Black"></button>
+                                    <button class="color-swatch" data-color="cherry" style="background-color: #720d1c;" title="Cherry Red"></button>
+                                    <button class="color-swatch" data-color="royal" style="background-color: #0f4c81;" title="Royal Blue"></button>
+                                    <button class="color-swatch" data-color="jade" style="background-color: #1a4f38;" title="Jade Green"></button>
+                                    <button class="color-swatch" data-color="translucent-gold" style="background-color: rgba(220, 160, 40, 0.4);" title="Translucent Gold"></button>
+                                    <button class="color-swatch" data-color="custom" style="background: linear-gradient(135deg, #ff007f, #7f00ff);" title="Custom Color"></button>
+                                </div>
+                                <div class="control-subgroup hidden" id="custom-color-container">
+                                    <label for="vinyl-color-picker" class="field-label">Custom Vinyl Color</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="vinyl-color-picker" value="#3a0d5c">
+                                        <input type="text" id="vinyl-color-hex" value="#3a0d5c" class="input-text font-mono">
+                                    </div>
+                                    <div class="checkbox-row mt-2">
+                                        <input type="checkbox" id="vinyl-translucent" class="checkbox-input">
+                                        <label for="vinyl-translucent" class="checkbox-label">Translucent Material</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="group-label">Center Label Info</label>
+                            <div class="field-row">
+                                <div class="field-col">
+                                    <label for="label-title" class="field-label">Track Title</label>
+                                    <input type="text" id="label-title" value="Lost in Rotation" placeholder="e.g. Song Title" class="input-text">
+                                </div>
+                            </div>
+                            <div class="field-row mt-3">
+                                <div class="field-col">
+                                    <label for="label-artist" class="field-label">Artist Name</label>
+                                    <input type="text" id="label-artist" value="Synthesized Dreams" placeholder="e.g. Artist" class="input-text">
+                                </div>
+                            </div>
+                            <div class="field-row mt-3">
+                                <div class="field-col">
+                                    <label for="label-album" class="field-label">Album / Catalog</label>
+                                    <input type="text" id="label-album" value="Lofi Orbitals Vol. I" placeholder="e.g. LP Title / CAT-001" class="input-text">
+                                </div>
+                            </div>
+                            <div class="field-row mt-3">
+                                <div class="field-col">
+                                    <label class="field-label">Label Size</label>
+                                    <div class="range-wrapper">
+                                        <input type="range" id="label-size" min="25" max="45" value="33" class="input-range">
+                                        <span class="range-value font-mono" id="label-size-val">33%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field-row mt-3">
+                                <div class="field-col">
+                                    <label for="label-design-style" class="field-label">Label Design Style</label>
+                                    <select id="label-design-style" class="input-select">
+                                        <option value="full-art" selected>Full Cover Art</option>
+                                        <option value="ring-art">Cover Art Ring (Art + Solid Edge)</option>
+                                        <option value="vintage">Vintage Cream Paper</option>
+                                        <option value="dark">Classic Dark Slate</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 2: AUDIO -->
+                    <section class="tab-section" id="tab-audio">
+                        <div class="control-group">
+                            <label class="group-label">Audio Track</label>
+                            <div class="dropzone" id="audio-dropzone">
+                                <input type="file" id="audio-upload" accept="audio/*" class="file-input">
+                                <i class="ph-bold ph-waveform dropzone-icon"></i>
+                                <span class="dropzone-text">Drag & drop audio file or <span class="accent-link">browse</span></span>
+                                <span class="dropzone-sub">Supports MP3, WAV, FLAC, M4A</span>
+                            </div>
+                            <div class="uploaded-file-preview hidden" id="audio-preview-container">
+                                <div class="audio-info">
+                                    <i class="ph-bold ph-music-notes audio-icon"></i>
+                                    <div class="file-details">
+                                        <span class="file-name" id="audio-file-name">track.mp3</span>
+                                        <span class="file-size font-mono" id="audio-file-duration">0:00</span>
+                                    </div>
+                                </div>
+                                <button class="btn-icon-danger" id="remove-audio-btn">
+                                    <i class="ph-bold ph-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group" id="audio-player-control-group">
+                            <label class="group-label">Audio Control</label>
+                            <div class="audio-control-card">
+                                <button class="btn-primary btn-play-pause" id="panel-play-btn" disabled>
+                                    <i class="ph-fill ph-play play-icon"></i>
+                                    <span>Play Track</span>
+                                </button>
+                                <div class="playback-time font-mono" id="playback-time-display">0:00 / 0:00</div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="group-label">Audio Visualizer</label>
+                            <div class="field-row">
+                                <div class="field-col">
+                                    <label for="visualizer-type" class="field-label">Visualizer Style</label>
+                                    <select id="visualizer-type" class="input-select">
+                                        <option value="none">No Visualizer</option>
+                                        <option value="pulse" selected>Subtle Bass Pulse (Vinyl Size)</option>
+                                        <option value="ring">Circular Waveform Ring (Outer)</option>
+                                        <option value="bars">Spinning Ring Equalizer</option>
+                                        <option value="double-bars">Double Spinning Ring Equalizer</option>
+                                        <option value="deformed-ring">Reactive Shaky Ring</option>
+                                        <option value="spiral">Radial Dot Spiral</option>
+                                        <option value="glow-pulse">Ambient Aura Glow (Behind Vinyl)</option>
+                                        <option value="particles">Radial Floating Stars (Behind Vinyl)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field-row mt-3" id="visualizer-color-row">
+                                <div class="field-col">
+                                    <label for="visualizer-color" class="field-label">Visualizer Color</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="visualizer-color" value="#10b981">
+                                        <input type="text" id="visualizer-color-hex" value="#10b981" class="input-text font-mono">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field-row mt-3" id="visualizer-sensitivity-row">
+                                <div class="field-col">
+                                    <label class="field-label">Sensitivity</label>
+                                    <div class="range-wrapper">
+                                        <input type="range" id="visualizer-sensitivity" min="1" max="10" value="5" class="input-range">
+                                        <span class="range-value font-mono" id="visualizer-sens-val">5</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 3: LAYOUT -->
+                    <section class="tab-section" id="tab-layout">
+                        <div class="control-group">
+                            <label class="group-label">Aspect Ratio</label>
+                            <div class="aspect-ratio-grid">
+                                <button class="ratio-card active" data-ratio="1-1">
+                                    <div class="ratio-box ratio-1-1"></div>
+                                    <span class="ratio-name">1:1 Square</span>
+                                    <span class="ratio-desc">Spotify Canvas / Instagram</span>
+                                </button>
+                                <button class="ratio-card" data-ratio="9-16">
+                                    <div class="ratio-box ratio-9-16"></div>
+                                    <span class="ratio-name">9:16 Vertical</span>
+                                    <span class="ratio-desc">TikTok / YouTube Shorts</span>
+                                </button>
+                                <button class="ratio-card" data-ratio="16-9">
+                                    <div class="ratio-box ratio-16-9"></div>
+                                    <span class="ratio-name">16:9 Landscape</span>
+                                    <span class="ratio-desc">YouTube / TV Backgrounds</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="group-label">Background Style</label>
+                            <div class="field-row">
+                                <div class="field-col">
+                                    <label for="bg-style" class="field-label">Style</label>
+                                    <select id="bg-style" class="input-select">
+                                        <option value="blurred" selected>Blurred Artwork (Recommended)</option>
+                                        <option value="solid">Solid Color</option>
+                                        <option value="gradient">Linear Gradient</option>
+                                        <option value="custom">Custom Image Upload</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Solid Background options -->
+                            <div class="field-row mt-3 hidden" id="bg-solid-color-row">
+                                <div class="field-col">
+                                    <label for="bg-color" class="field-label">Background Color</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="bg-color" value="#121217">
+                                        <input type="text" id="bg-color-hex" value="#121217" class="input-text font-mono">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gradient options -->
+                            <div id="bg-gradient-group" class="hidden">
+                                <div class="field-row mt-3">
+                                    <div class="field-col">
+                                        <label for="bg-grad-color1" class="field-label">Gradient Color 1</label>
+                                        <div class="color-picker-wrapper">
+                                            <input type="color" id="bg-grad-color1" value="#1e1e24">
+                                            <input type="text" id="bg-grad-color1-hex" value="#1e1e24" class="input-text font-mono">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field-row mt-3">
+                                    <div class="field-col">
+                                        <label for="bg-grad-color2" class="field-label">Gradient Color 2</label>
+                                        <div class="color-picker-wrapper">
+                                            <input type="color" id="bg-grad-color2" value="#0a0a0d">
+                                            <input type="text" id="bg-grad-color2-hex" value="#0a0a0d" class="input-text font-mono">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field-row mt-3">
+                                    <div class="field-col">
+                                        <label class="field-label">Gradient Angle</label>
+                                        <div class="range-wrapper">
+                                            <input type="range" id="bg-grad-angle" min="0" max="360" value="135" class="input-range">
+                                            <span class="range-value font-mono" id="bg-grad-angle-val">135°</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom image background -->
+                            <div class="field-row mt-3 hidden" id="bg-custom-image-row">
+                                <div class="field-col">
+                                    <label class="field-label">Background Image</label>
+                                    <div class="dropzone" id="bg-dropzone">
+                                        <input type="file" id="bg-upload" accept="image/*" class="file-input">
+                                        <i class="ph-bold ph-image-square dropzone-icon"></i>
+                                        <span class="dropzone-text">Click to upload bg image</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Blur and Vignette Adjustments -->
+                            <div class="field-row mt-3" id="bg-blur-row">
+                                <div class="field-col">
+                                    <label class="field-label">Ambient Blur</label>
+                                    <div class="range-wrapper">
+                                        <input type="range" id="bg-blur-intensity" min="0" max="100" value="40" class="input-range">
+                                        <span class="range-value font-mono" id="bg-blur-val">40px</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field-row mt-3">
+                                <div class="field-col">
+                                    <label class="field-label">Vignette Darkness</label>
+                                    <div class="range-wrapper">
+                                        <input type="range" id="bg-vignette-intensity" min="0" max="100" value="50" class="input-range">
+                                        <span class="range-value font-mono" id="bg-vignette-val">50%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 4: EFFECTS -->
+                    <section class="tab-section" id="tab-effects">
+                        <div class="control-group">
+                            <label class="group-label">Playback Animation</label>
+                            <div class="field-row">
+                                <div class="field-col">
+                                    <label class="field-label">Spin Speed (RPM)</label>
+                                    <div class="range-wrapper">
+                                        <input type="range" id="spin-rpm" min="0" max="78" value="33" class="input-range">
+                                        <span class="range-value font-mono" id="spin-rpm-val">33⅓</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="checkbox-row mt-3">
+                                <input type="checkbox" id="spin-reverse" class="checkbox-input">
+                                <label for="spin-reverse" class="checkbox-label">Spin Counter-Clockwise</label>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="group-label">Grooves & Shine</label>
+                            <div class="field-row">
+                                <div class="field-col">
+                                    <label class="field-label">Vinyl Grooves Visibility</label>
+                                    <div class="range-wrapper">
+                                        <input type="range" id="groove-visibility" min="0" max="100" value="65" class="input-range">
+                                        <span class="range-value font-mono" id="grooves-val">65%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field-row mt-3">
+                                <div class="field-col">
+                                    <label class="field-label">Reflective Shine Intensity</label>
+                                    <div class="range-wrapper">
+                                        <input type="range" id="shine-intensity" min="0" max="100" value="50" class="input-range">
+                                        <span class="range-value font-mono" id="shine-val">50%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="group-label">Hardware</label>
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="show-tone-arm" class="checkbox-input" checked>
+                                <label for="show-tone-arm" class="checkbox-label">Display Tone Arm</label>
+                            </div>
+                            <div class="checkbox-row mt-3">
+                                <input type="checkbox" id="show-spindle" class="checkbox-input" checked>
+                                <label for="show-spindle" class="checkbox-label">Display Spindle & Center Ring</label>
+                            </div>
+                            <div class="checkbox-row mt-3">
+                                <input type="checkbox" id="pulse-tone-arm" class="checkbox-input">
+                                <label for="pulse-tone-arm" class="checkbox-label">Vibrate Arm to Beat (Bass)</label>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="group-label">Text Layouts</label>
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="show-label-text" class="checkbox-input" checked>
+                                <label for="show-label-text" class="checkbox-label">Show Text on Label</label>
+                            </div>
+                            <div class="checkbox-row mt-3">
+                                <input type="checkbox" id="show-ambient-text" class="checkbox-input" checked>
+                                <label for="show-ambient-text" class="checkbox-label">Show Ambient Text Over Background</label>
+                            </div>
+                            <div class="control-subgroup mt-2" id="ambient-text-options">
+                                <label for="ambient-text-pos" class="field-label">Position</label>
+                                <select id="ambient-text-pos" class="input-select">
+                                    <option value="bottom-left" selected>Bottom Left</option>
+                                    <option value="top-left">Top Left</option>
+                                    <option value="center-bottom">Center Bottom</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 5: EXPORT -->
+                    <section class="tab-section" id="tab-export">
+                        <div class="control-group">
+                            <label class="group-label">Video Settings</label>
+                            <div class="field-row">
+                                <div class="field-col">
+                                    <label for="export-resolution" class="field-label">Resolution (W & H depend on layout)</label>
+                                    <select id="export-resolution" class="input-select">
+                                        <option value="720">720p (Fast render)</option>
+                                        <option value="1080" selected>1080p (Full HD - Best Quality)</option>
+                                        <option value="1440">1440p (Quad HD)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field-row mt-3">
+                                <div class="field-col col-6">
+                                    <label for="export-fps" class="field-label">Frame Rate</label>
+                                    <select id="export-fps" class="input-select font-mono">
+                                        <option value="30" selected>30 fps</option>
+                                        <option value="60">60 fps</option>
+                                    </select>
+                                </div>
+                                <div class="field-col col-6">
+                                    <label for="export-bitrate" class="field-label">Bitrate (Mbps)</label>
+                                    <select id="export-bitrate" class="input-select font-mono">
+                                        <option value="4">4 Mbps</option>
+                                        <option value="8" selected>8 Mbps</option>
+                                        <option value="12">12 Mbps</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="group-label">Duration</label>
+                            <div class="radio-group-vertical">
+                                <label class="radio-label">
+                                    <input type="radio" name="export-duration-type" value="preset" checked>
+                                    <span>Export Loop Clip</span>
+                                </label>
+                                <div class="control-subgroup pl-4 mb-2">
+                                    <select id="export-duration-preset" class="input-select">
+                                        <option value="15">15 Seconds (Spotify Canvas)</option>
+                                        <option value="30" selected>30 Seconds (Instagram/Reels)</option>
+                                        <option value="60">60 Seconds (TikTok / YT Shorts)</option>
+                                    </select>
+                                </div>
+
+                                <label class="radio-label">
+                                    <input type="radio" name="export-duration-type" value="full" id="export-duration-full-radio">
+                                    <span>Full Song (Requires audio file upload)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="control-group mt-6">
+                            <button class="btn-accent w-full" id="start-export-btn">
+                                <i class="ph-bold ph-video-camera"></i>
+                                <span>Generate MP4 Background</span>
+                            </button>
+                        </div>
+
+                        <!-- Progress Overlay/Panel during export -->
+                        <div class="export-progress-card hidden" id="export-progress-card">
+                            <div class="progress-details">
+                                <span class="progress-status" id="export-status-text">Encoding H.264 Video...</span>
+                                <span class="progress-percent font-mono" id="export-percent-text">0%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="export-bar-fill" style="width: 0%"></div>
+                            </div>
+                            <div class="progress-meta font-mono" id="export-meta-text">
+                                Frame: 0 / 900 | Time Remaining: 0s
+                            </div>
+                            <button class="btn-danger w-full mt-3" id="cancel-export-btn">
+                                <i class="ph-bold ph-x-circle"></i>
+                                <span>Cancel Export</span>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+
+            <!-- Preview Window Area -->
+            <section class="preview-area">
+                <div class="preview-container-box">
+                    <div class="preview-header">
+                        <span class="preview-status-badge">
+                            <span class="pulse-dot"></span>
+                            <span>LIVE PREVIEW</span>
+                        </span>
+                        <div class="resolution-indicator font-mono" id="preview-resolution-text">
+                            1080 x 1080 (1:1)
+                        </div>
+                    </div>
+                    
+                    <!-- The Canvas wrapper that matches aspect ratios -->
+                    <div class="canvas-wrapper ratio-1-1" id="canvas-aspect-wrapper">
+                        <canvas id="preview-canvas" width="1080" height="1080"></canvas>
+                        
+                        <!-- Floating canvas guidelines (only visible in design view, or can be clean) -->
+                        <div class="canvas-glow"></div>
+                    </div>
+
+                    <!-- Canvas Playback Overlay Controls -->
+                    <div class="canvas-play-controls">
+                        <button class="btn-play-icon" id="canvas-play-btn">
+                            <i class="ph-fill ph-play icon-play"></i>
+                        </button>
+                        <div class="audio-scrubber-wrapper">
+                            <div class="time-readout font-mono" id="scrubber-current-time">00:00</div>
+                            <div class="scrubber-track" id="scrubber-track-bar">
+                                <div class="scrubber-fill" id="scrubber-fill-bar" style="width: 0%;"></div>
+                                <div class="scrubber-handle" id="scrubber-handle-dot"></div>
+                            </div>
+                            <div class="time-readout font-mono" id="scrubber-total-time">00:00</div>
+                        </div>
+                        <button class="btn-mute-icon" id="canvas-mute-btn" title="Mute/Unmute Preview">
+                            <i class="ph-bold ph-speaker-high icon-volume"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- WebCodecs support warning modal -->
+    <div class="modal-overlay hidden" id="compat-warning-modal">
+        <div class="modal-box">
+            <i class="ph-bold ph-warning-circle modal-icon text-warning"></i>
+            <h3 class="modal-title">WebCodecs Limited Support</h3>
+            <p class="modal-text">
+                Your browser does not natively support H.264 high-speed hardware encoding. 
+                MP4 exports will proceed via **MediaRecorder WebM format** which is standardly supported, 
+                and then downloaded with a .mp4/webm name extension, but may require VLC or a desktop encoder for full compatibility. 
+                For the best pixel-perfect MP4 experience, we recommend using **Google Chrome** or **Microsoft Edge**.
+            </p>
+            <button class="btn-primary mt-4" id="close-compat-modal">Got it, Proceed</button>
+        </div>
+    </div>
+
+    <!-- Script imports -->
+    <div id="debug-log-panel" style="position:fixed; bottom:10px; right:10px; width:320px; height:220px; background:rgba(10,10,15,0.95); border:1px solid #3b82f6; border-radius:8px; color:#3b82f6; font-family:monospace; font-size:11px; padding:12px; z-index:99999; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.5); backdrop-filter:blur(8px);">
+        <h4 style="margin-bottom:6px; border-bottom:1px solid rgba(59,130,246,0.2); pb-4; color:#ffffff;">Vinyloop Diagnostic Console</h4>
+        <div id="debug-log-content"></div>
+    </div>
+    <script>
+        const dbgLog = (msg) => {
+            const content = document.getElementById('debug-log-content');
+            if (content) {
+                content.innerHTML += '<div style="margin-bottom:4px;">' + msg + '</div>';
+            }
+        };
+        dbgLog("[+] Diagnostic panel active");
+        
+        // Check elements
+        const cnv = document.getElementById('preview-canvas');
+        dbgLog("[*] Canvas: " + (cnv ? "Found (" + cnv.width + "x" + cnv.height + ")" : "Missing!"));
+        dbgLog("[*] ReadyState: " + document.readyState);
+        
+        // Attempt dynamic import of app.js to trace import errors
+        dbgLog("[*] Loading app.js...");
+        import('./app.js?v=16')
+            .then(() => dbgLog("[+] app.js dynamic load: SUCCESS"))
+            .catch(e => {
+                dbgLog("<span style='color:#ef4444;'>[-] app.js load error: " + e.message + "</span>");
+                console.error("DIAGNOSTIC ERROR:", e);
+            });
+    </script>
+    <!-- We keep the static import tag as well -->
+    <script type="module" src="app.js?v=16"></script>
+</body>
+</html>
